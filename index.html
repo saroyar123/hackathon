@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Personal Finance Tracker</title>
+  <style>
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+  background-color: #f5f5f5;
+}
+
+h1, h2 {
+  color: #333;
+}
+
+form {
+  margin-bottom: 20px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+table th, table td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #ccc;
+}
+
+table th {
+  background-color: #f2f2f2;
+}
+
+button {
+  padding: 8px 12px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+input[type="number"],
+input[type="text"],
+select {
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  width: 100%;
+  margin-bottom: 10px;
+  transition: border-color 0.3s ease;
+}
+
+input[type="number"]:focus,
+input[type="text"]:focus,
+select:focus {
+  outline: none;
+  border-color: #4CAF50;
+  box-shadow: 0 0 5px #4CAF50;
+}
+
+@media (min-width: 768px) {
+  form {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  form label {
+    flex: 1;
+    margin-right: 10px;
+  }
+
+  form input,
+  form select {
+    flex: 2;
+    margin-right: 10px;
+  }
+
+  form button {
+    flex: 1;
+  }
+}
+
+
+  </style>
+</head>
+<body>
+  <h1>Personal Finance Tracker</h1>
+  
+  <form id="transactionForm">
+    <label for="type">Type:</label>
+    <select id="type">
+      <option value="income">Income</option>
+      <option value="expense">Expense</option>
+    </select>
+    <br>
+    <label for="amount">Amount:</label>
+    <input type="number" id="amount">
+    <br>
+    <label for="description">Description:</label>
+    <input type="text" id="description">
+    <br>
+    <button type="submit">Add Transaction</button>
+  </form>
+  
+  <h2>Transactions</h2>
+  <table id="transactionTable">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Amount</th>
+        <th>Description</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="transactionBody">
+      
+    </tbody>
+  </table>
+  
+  <h2>Current Balance: <span id="balance">0</span></h2>
+  
+  <script>
+    // JavaScript code
+
+    // Get references to HTML elements
+    const transactionForm = document.getElementById('transactionForm');
+    const transactionTable = document.getElementById('transactionBody');
+    const balanceDisplay = document.getElementById('balance');
+
+    // Initialize transactions array from local storage or an empty array
+    let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+
+    // Function to handle form submission and add new transaction
+    function addTransaction(event) {
+      event.preventDefault();
+
+      // Get the values from the form fields
+      const type = document.getElementById('type').value;
+      const amount = parseFloat(document.getElementById('amount').value);
+      const description = document.getElementById('description').value;
+
+      // Create a new transaction object
+      const transaction = { type, amount, description };
+
+      // Add the transaction to the array
+      transactions.push(transaction);
+
+      // Call the displayTransactions function to update the table
+      displayTransactions();
+
+      // Call the updateBalance function to recalculate the balance
+      updateBalance();
+
+      // Clear the form fields
+      document.getElementById('type').value = 'income';
+      document.getElementById('amount').value = '';
+      document.getElementById('description').value = '';
+
+      // Save transactions to local storage
+      localStorage.setItem('transactions', JSON.stringify(transactions));
+    }
+
+    // Function to delete a transaction from the array
+    function deleteTransaction(index) {
+      // Remove the transaction at the specified index
+      transactions.splice(index, 1);
+
+      // Call the displayTransactions function to update the table
+      displayTransactions();
+
+      // Call the updateBalance function to recalculate the balance
+      updateBalance();
+
+      // Save transactions to local storage
+      localStorage.setItem('transactions', JSON.stringify(transactions));
+    }
+
+    // Function to display transactions in the table
+    function displayTransactions() {
+      // Clear the table body
+      transactionTable.innerHTML = '';
+
+      // Iterate through each transaction and create table rows
+      transactions.forEach((transaction, index) => {
+        const row = document.createElement('tr');
+
+        // Create table cells for type, amount, and description
+        const typeCell = document.createElement('td');
+        typeCell.textContent = transaction.type;
+
+        const amountCell = document.createElement('td');
+        amountCell.textContent = transaction.amount;
+
+        const descriptionCell = document.createElement('td');
+        descriptionCell.textContent = transaction.description;
+
+        // Create a delete button and add click event listener
+        const deleteCell = document.createElement('td');
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = 'Delete';
+        deleteButton.addEventListener('click', () => deleteTransaction(index));
+
+        // Append the delete button to the delete cell
+        deleteCell.appendChild(deleteButton);
+
+        // Append the cells to the row
+        row.appendChild(typeCell);
+        row.appendChild(amountCell);
+        row.appendChild(descriptionCell);
+        row.appendChild(deleteCell);
+
+        // Append the row to the table body
+        transactionTable.appendChild(row);
+      });
+    }
+
+    // Function to calculate and display the balance
+    function updateBalance() {
+      let balance = 0;
+
+      transactions.forEach(transaction => {
+        if (transaction.type === 'income') {
+          balance += transaction.amount;
+        } else {
+          balance -= transaction.amount;
+        }
+      });
+
+      balanceDisplay.textContent = balance.toFixed(2);
+    }
+
+    // Add event listener to the form for form submission
+    transactionForm.addEventListener('submit', addTransaction);
+
+    // Call the displayTransactions function to populate the table
+    displayTransactions();
+
+    // Call the updateBalance function to display the initial balance
+    updateBalance();
+  </script>
+</body>
+</html>
